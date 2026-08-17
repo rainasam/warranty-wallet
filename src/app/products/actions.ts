@@ -81,3 +81,96 @@ export async function deleteProduct(productId: string) {
   revalidatePath("/dashboard");
   redirect("/dashboard");
 }
+
+export async function createAmcContract(productId: string, formData: FormData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const provider = String(formData.get("provider") || "") || null;
+  const start_date = String(formData.get("start_date"));
+  const end_date = String(formData.get("end_date"));
+  const cost = formData.get("cost") ? Number(formData.get("cost")) : null;
+  const maintenance_interval_months = formData.get("maintenance_interval_months")
+    ? Number(formData.get("maintenance_interval_months"))
+    : null;
+
+  const { error } = await supabase.from("amc_contracts").insert({
+    product_id: productId,
+    provider,
+    start_date,
+    end_date,
+    cost,
+    maintenance_interval_months,
+  });
+
+  if (error) {
+    redirect(`/products/${productId}?error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath(`/products/${productId}`);
+  revalidatePath("/dashboard");
+  redirect(`/products/${productId}`);
+}
+
+export async function deleteAmcContract(amcContractId: string, productId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  await supabase.from("amc_contracts").delete().eq("id", amcContractId);
+
+  revalidatePath(`/products/${productId}`);
+  revalidatePath("/dashboard");
+  redirect(`/products/${productId}`);
+}
+
+export async function createServiceRecord(
+  amcContractId: string,
+  productId: string,
+  formData: FormData,
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const service_date = String(formData.get("service_date"));
+  const technician = String(formData.get("technician") || "") || null;
+  const notes = String(formData.get("notes") || "") || null;
+  const cost = formData.get("cost") ? Number(formData.get("cost")) : null;
+
+  const { data: amc } = await supabase
+    .from("amc_contracts")
+    .select("maintenance_interval_months")
+    .eq("id", amcContractId)
+    .single();
+
+  const next_due_date =
+    amc?.maintenance_interval_months && amc.maintenance_interval_months > 0
+      ? addMonths(service_date, amc.maintenance_interval_months)
+      : null;
+
+  const { error } = await supabase.from("service_records").insert({
+    amc_contract_id: amcContractId,
+    product_id: productId,
+    service_date,
+    technician,
+    notes,
+    cost,
+    next_due_date,
+  });
+
+  if (error) {
+    redirect(`/products/${productId}?error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath(`/products/${productId}`);
+  revalidatePath("/dashboard");
+  redirect(`/products/${productId}`);
+}

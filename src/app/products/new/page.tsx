@@ -55,7 +55,7 @@ export default async function NewProductPage({
                     required
                     className="sr-only"
                   />
-                  <span className="text-2xl">{cat.icon}</span>
+                  <cat.icon className="h-6 w-6" />
                   {cat.label}
                 </label>
               ))}

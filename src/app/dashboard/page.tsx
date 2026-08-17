@@ -2,7 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppHeader } from "@/components/AppHeader";
-import { categoryIcon, categoryLabel, categoryColor } from "@/lib/categories";
+import { CategoryIcon } from "@/components/CategoryIcon";
+import { categoryLabel, categoryColor } from "@/lib/categories";
 import {
   governingEndDate,
   statusFromEndDate,
@@ -26,12 +27,15 @@ export default async function DashboardPage() {
 
   const { data: products } = await supabase
     .from("products")
-    .select("id, category, name, brand, model, warranty_periods(end_date)")
+    .select("id, category, name, brand, model, warranty_periods(end_date), amc_contracts(end_date)")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
   const cards = (products ?? []).map((p) => {
-    const endDates = (p.warranty_periods ?? []).map((w) => w.end_date as string);
+    const endDates = [
+      ...(p.warranty_periods ?? []).map((w) => w.end_date as string),
+      ...(p.amc_contracts ?? []).map((a) => a.end_date as string),
+    ];
     const status = statusFromEndDate(governingEndDate(endDates));
     return { ...p, status };
   });
@@ -140,9 +144,9 @@ function ProductCard({
     >
       <div className="flex items-start justify-between">
         <span
-          className={`flex h-14 w-14 items-center justify-center rounded-full text-2xl ${categoryColor(product.category)}`}
+          className={`flex h-14 w-14 items-center justify-center rounded-full ${categoryColor(product.category)}`}
         >
-          {categoryIcon(product.category)}
+          <CategoryIcon value={product.category} className="h-6 w-6" />
         </span>
         <span
           className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${STATUS_CLASSES[product.status]}`}

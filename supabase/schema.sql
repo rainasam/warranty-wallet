@@ -174,3 +174,20 @@ create policy "reminder_log: user views own" on public.reminder_log
   for select using (auth.uid() = user_id);
 
 create index if not exists reminder_log_user_id_idx on public.reminder_log (user_id);
+
+-- 7. Storage: run this AFTER creating a private "documents" bucket in
+-- Supabase Dashboard > Storage > New bucket (name: documents, Public: off).
+-- Files are stored under `${user_id}/...`, so these policies scope access
+-- to the folder matching the requesting user's id.
+
+create policy "documents: users can upload to own folder" on storage.objects
+  for insert to authenticated
+  with check (bucket_id = 'documents' and (storage.foldername(name))[1] = auth.uid()::text);
+
+create policy "documents: users can view own files" on storage.objects
+  for select to authenticated
+  using (bucket_id = 'documents' and (storage.foldername(name))[1] = auth.uid()::text);
+
+create policy "documents: users can delete own files" on storage.objects
+  for delete to authenticated
+  using (bucket_id = 'documents' and (storage.foldername(name))[1] = auth.uid()::text);

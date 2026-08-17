@@ -5,6 +5,9 @@ import { createClient } from "@/lib/supabase/server";
 import { AppHeader } from "@/components/AppHeader";
 import { CATEGORIES } from "@/lib/categories";
 
+const FILE_INPUT_CLASS =
+  "w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-600 file:mr-3 file:rounded-md file:border-0 file:bg-teal-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-accent hover:file:bg-teal-100";
+
 export default async function NewProductPage({
   searchParams,
 }: {
@@ -150,6 +153,19 @@ export default async function NewProductPage({
                 className="w-full rounded-lg border border-neutral-300 px-4 py-3 text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent"
               />
             </div>
+
+            <div>
+              <label htmlFor="invoice_file" className="mb-1.5 block text-sm font-medium text-foreground">
+                Invoice / receipt (optional)
+              </label>
+              <input
+                id="invoice_file"
+                name="invoice_file"
+                type="file"
+                accept="image/*,.pdf"
+                className={FILE_INPUT_CLASS}
+              />
+            </div>
           </section>
 
           <section className="space-y-5 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
@@ -166,6 +182,19 @@ export default async function NewProductPage({
                 min="0"
                 defaultValue={12}
                 className="w-full rounded-lg border border-neutral-300 px-4 py-3 text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="standard_document" className="mb-1.5 block text-sm font-medium text-foreground">
+                Warranty card / certificate (optional)
+              </label>
+              <input
+                id="standard_document"
+                name="standard_document"
+                type="file"
+                accept="image/*,.pdf"
+                className={FILE_INPUT_CLASS}
               />
             </div>
 
@@ -189,6 +218,19 @@ export default async function NewProductPage({
                 type="number"
                 min="0"
                 className="w-full rounded-lg border border-neutral-300 px-4 py-3 text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="extended_document" className="mb-1.5 block text-sm font-medium text-foreground">
+                Extended warranty document (optional)
+              </label>
+              <input
+                id="extended_document"
+                name="extended_document"
+                type="file"
+                accept="image/*,.pdf"
+                className={FILE_INPUT_CLASS}
               />
             </div>
           </section>

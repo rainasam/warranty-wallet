@@ -11,7 +11,7 @@ single place to see "what do I own, and what's its coverage status right now."
 **Warranty Wallet** is a web app that lets a user register a product once and
 then automatically tracks its full ownership lifecycle — warranty, extended
 warranty, AMC, and maintenance — surfacing what needs attention before it's
-too late. 
+too late.  
 
 ## 2. Goals
 
@@ -73,9 +73,14 @@ This stack is chosen for: fast MVP velocity, generous free tiers, no separate ba
    - AMC section: contract provider, start/end, cost, maintenance interval, documents
    - Service history: chronological log of service records (date, technician/provider, notes, cost, attached bill), "+ Log Service" action which also recalculates next-due date
    - Edit / delete product
-6. **Notifications / Reminders view** — log of reminders sent (email log), upcoming reminders
-7. **Account settings** — profile, email preferences, subscription/plan management, upgrade to paid
-8. **Pricing / Upgrade page** — free vs paid comparison, upgrade CTA (payment flow)
+6. **AMC Schedule page** — a dedicated cross-product view listing every AMC contract's renewal date and every product's next maintenance/service-due date together in one sorted (soonest-first) list, so the user doesn't have to open each product individually to see what's coming up. Each row links through to its Product Detail page.
+7. **Notifications / Reminders view** — log of reminders sent (email log), upcoming reminders
+8. **Account / Profile settings** — name, email (read-only), change password, email/notification preferences, current plan display with usage (e.g. "3/5 products used") and upgrade CTA, delete account
+9. **Pricing / Upgrade page** — free vs paid comparison, upgrade CTA (payment flow)
+10. **FAQ page** — static help content answering common questions (how warranty tracking works, AMC vs warranty, freemium limits, etc.)
+11. **Feedback page** — simple in-app form (message + optional rating) that saves submissions to the database for review; no email setup required
+12. **Privacy Policy page** — standard draft covering what data is collected (account info, product/purchase details, uploaded documents) and how it's used; explicitly a starting draft, not a substitute for legal review before a real public launch
+13. **Terms & Conditions page** — standard draft covering account terms, freemium/subscription terms, acceptable use; same legal-review caveat as the Privacy Policy
 
 ## 6. Core Data Model (conceptual)
 
@@ -85,6 +90,7 @@ This stack is chosen for: fast MVP velocity, generous free tiers, no separate ba
 - **AMCContract**: id, product_id, provider, start_date, end_date, cost, maintenance_interval_months, document_file
 - **ServiceRecord**: id, amc_contract_id (nullable, can also log against a product directly), service_date, technician/provider, notes, cost, document_file, next_due_date (auto-calculated from interval)
 - **ReminderLog**: id, user_id, related_entity (warranty/amc/service), fire_date, channel (email), sent_at, status
+- **Feedback**: id, user_id (nullable, in case feedback is ever allowed pre-login), message, rating (nullable), created_at
 
 Status for any product (used for dashboard badges) is derived, not stored: computed from the nearest of {warranty end date, extended warranty end date, AMC end date, next maintenance due date}.
 
@@ -144,38 +150,47 @@ navigation on desktop, bottom/hamburger nav on mobile web.
 
 Building in vertical phases — each phase ends with something real you can click through, not just scaffolding.
 
-**Phase 0 — Project setup**
+**Phase 0 — Project setup ✅ done**
 - Scaffold Next.js + TypeScript + Tailwind project, push to a GitHub repo
 - Create Supabase project, run initial schema migration (`users`, `products`, `warranty_periods`, `amc_contracts`, `service_records`, `reminder_log`) with RLS enabled
-- Wire up Supabase Auth (email/password + Google) and confirm sign up/log in works end-to-end locally
+- Wire up Supabase Auth (email/password) and confirm sign up/log in works end-to-end locally
 
-**Phase 1 — Core product + warranty tracking (the heart of the app)**
+**Phase 1 — Core product + warranty tracking ✅ done**
 - Add Product flow: category picker, purchase details, warranty details, save
-- Product Detail page: view warranty status, edit, delete
+- Product Detail page: view warranty status, delete
 - Dashboard: card grid of products with computed status badges (Active/Expiring Soon/Expired), sorted by urgency
-- This phase alone is a usable v0 — register products and see warranty status at a glance
+- Custom shield logo, teal/blue brand palette, Lucide category icons
 
-**Phase 2 — Extended warranty, AMC & maintenance**
-- Extend Add Product / Product Detail flow with extended warranty section
+**Phase 2 — Extended warranty, AMC & maintenance ✅ done**
+- Extend Add Product flow with extended warranty section
 - AMC contract creation (provider, dates, cost, maintenance interval)
 - Service record logging + auto-calculated next-due date
-- Dashboard/status logic updated to factor in AMC/maintenance due dates
+- Dashboard/status logic updated to factor in AMC end dates
 
-**Phase 3 — Documents**
+**Phase 3 — Documents (next up)**
 - File upload wired to Supabase Storage for invoices, warranty cards, AMC contracts, service bills
 - Attach/view/download documents from Product Detail page
 
-**Phase 4 — Reminders**
+**Phase 4 — AMC Schedule, FAQ, Feedback & legal pages**
+- AMC Schedule page: cross-product list of AMC renewals + next service-due dates, sorted soonest-first
+- FAQ page (static content)
+- Feedback page: simple form saved to a new `feedback` table
+- Privacy Policy and Terms & Conditions pages (draft placeholder text, flagged for legal review before public launch)
+
+**Phase 5 — Reminders**
 - Resend integration for transactional email
 - Daily scheduled job (Vercel Cron) scanning for 30/7/1-day and overdue thresholds
 - Reminder log to prevent duplicate sends; a simple "Notifications" view of what's been sent
 
-**Phase 5 — Freemium & account**
+**Phase 6 — Freemium & full profile administration**
 - Free tier product-count limit (5) enforced on Add Product
-- Account settings page, plan display
+- Profile/account settings page: name, change password, email/notification preferences, plan usage display, delete account
 - Pricing/upgrade page (payment integration can follow once pricing is finalized — see Open Items)
 
-**Phase 6 — Deploy & polish**
+**Phase 7 — Google sign-in**
+- Google Cloud Console OAuth setup, enable provider in Supabase, add "Continue with Google" to login/signup
+
+**Phase 8 — Deploy & polish**
 - Deploy to Vercel on the default URL, connect production Supabase project
 - End-to-end smoke test (sign up → add product → get a reminder email)
 - Visual polish pass against the design direction in §10, responsive check on mobile web

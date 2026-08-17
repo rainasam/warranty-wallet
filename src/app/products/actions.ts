@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { addMonths } from "@/lib/dates";
+import { uploadDocumentIfPresent } from "@/lib/supabase/storage";
 
 function parseProductFields(formData: FormData) {
   return {
@@ -29,15 +30,28 @@ export async function createProduct(formData: FormData) {
   const hasExtended = formData.get("has_extended") === "on";
   const extendedMonths = Number(formData.get("extended_months") || 0);
 
+  const invoice_file = await uploadDocumentIfPresent(supabase, user.id, formData.get("invoice_file"));
+
   const { data: product, error: productError } = await supabase
     .from("products")
-    .insert({ ...fields, user_id: user.id })
+    .insert({ ...fields, invoice_file, user_id: user.id })
     .select("id")
     .single();
 
   if (productError || !product) {
     redirect(`/products/new?error=${encodeURIComponent(productError?.message ?? "Could not save product")}`);
   }
+
+  const standardDocument = await uploadDocumentIfPresent(
+    supabase,
+    user.id,
+    formData.get("standard_document"),
+  );
+  const extendedDocument = await uploadDocumentIfPresent(
+    supabase,
+    user.id,
+    formData.get("extended_document"),
+  );
 
   const warrantyRows = [];
   let standardEndDate = fields.purchase_date;
@@ -49,6 +63,7 @@ export async function createProduct(formData: FormData) {
       type: "standard",
       start_date: fields.purchase_date,
       end_date: standardEndDate,
+      document_file: standardDocument,
     });
   }
 
@@ -58,6 +73,7 @@ export async function createProduct(formData: FormData) {
       type: "extended",
       start_date: standardEndDate,
       end_date: addMonths(standardEndDate, extendedMonths),
+      document_file: extendedDocument,
     });
   }
 
@@ -96,6 +112,7 @@ export async function createAmcContract(productId: string, formData: FormData) {
   const maintenance_interval_months = formData.get("maintenance_interval_months")
     ? Number(formData.get("maintenance_interval_months"))
     : null;
+  const document_file = await uploadDocumentIfPresent(supabase, user.id, formData.get("document_file"));
 
   const { error } = await supabase.from("amc_contracts").insert({
     product_id: productId,
@@ -104,6 +121,7 @@ export async function createAmcContract(productId: string, formData: FormData) {
     end_date,
     cost,
     maintenance_interval_months,
+    document_file,
   });
 
   if (error) {
@@ -155,6 +173,7 @@ export async function createServiceRecord(
     amc?.maintenance_interval_months && amc.maintenance_interval_months > 0
       ? addMonths(service_date, amc.maintenance_interval_months)
       : null;
+  const document_file = await uploadDocumentIfPresent(supabase, user.id, formData.get("document_file"));
 
   const { error } = await supabase.from("service_records").insert({
     amc_contract_id: amcContractId,
@@ -164,6 +183,7 @@ export async function createServiceRecord(
     notes,
     cost,
     next_due_date,
+    document_file,
   });
 
   if (error) {

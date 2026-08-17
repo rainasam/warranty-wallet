@@ -11,6 +11,8 @@ import { AppHeader } from "@/components/AppHeader";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { categoryLabel, categoryColor } from "@/lib/categories";
 import { formatDate, addMonths } from "@/lib/dates";
+import { getSignedUrl } from "@/lib/supabase/storage";
+import { FileText } from "lucide-react";
 import {
   governingEndDate,
   statusFromEndDate,
@@ -18,6 +20,23 @@ import {
   STATUS_CLASSES,
   STATUS_DOT,
 } from "@/lib/status";
+
+const FILE_INPUT_CLASS =
+  "w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-600 file:mr-3 file:rounded-md file:border-0 file:bg-teal-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-accent hover:file:bg-teal-100";
+
+function DocumentLink({ href, label }: { href: string; label: string }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-accent hover:text-accent-hover"
+    >
+      <FileText className="h-3.5 w-3.5" />
+      {label}
+    </a>
+  );
+}
 
 export default async function ProductDetailPage({
   params,
@@ -75,6 +94,15 @@ export default async function ProductDetailPage({
   const warrantyEndDates = (warrantyPeriods ?? []).map((w) => w.end_date as string);
   const endDates = amc ? [...warrantyEndDates, amc.end_date as string] : warrantyEndDates;
   const status = statusFromEndDate(governingEndDate(endDates));
+
+  const invoiceUrl = await getSignedUrl(supabase, product.invoice_file);
+  const warrantyDocUrls = await Promise.all(
+    (warrantyPeriods ?? []).map((w) => getSignedUrl(supabase, w.document_file)),
+  );
+  const amcDocUrl = amc ? await getSignedUrl(supabase, amc.document_file) : null;
+  const serviceDocUrls = await Promise.all(
+    (serviceRecords ?? []).map((s) => getSignedUrl(supabase, s.document_file)),
+  );
 
   const deleteProductWithId = deleteProduct.bind(null, product.id as string);
   const createAmcForProduct = createAmcContract.bind(null, product.id as string);
@@ -135,21 +163,22 @@ export default async function ProductDetailPage({
             <dt className="text-neutral-500">Price</dt>
             <dd className="text-foreground">{product.price ? `₹${product.price}` : "—"}</dd>
           </dl>
+          {invoiceUrl && <DocumentLink href={invoiceUrl} label="View invoice" />}
         </section>
 
         <section className="mt-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
           <h2 className="text-base font-semibold text-foreground">Warranty</h2>
           {warrantyPeriods && warrantyPeriods.length > 0 ? (
             <ul className="mt-4 space-y-2.5">
-              {warrantyPeriods.map((w) => (
-                <li
-                  key={w.id}
-                  className="flex items-center justify-between rounded-xl bg-neutral-50 px-4 py-3 text-sm"
-                >
-                  <span className="font-medium text-foreground capitalize">{w.type} warranty</span>
-                  <span className="text-neutral-500">
-                    {formatDate(w.start_date)} → {formatDate(w.end_date)}
-                  </span>
+              {warrantyPeriods.map((w, i) => (
+                <li key={w.id} className="rounded-xl bg-neutral-50 px-4 py-3 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-foreground capitalize">{w.type} warranty</span>
+                    <span className="text-neutral-500">
+                      {formatDate(w.start_date)} → {formatDate(w.end_date)}
+                    </span>
+                  </div>
+                  {warrantyDocUrls[i] && <DocumentLink href={warrantyDocUrls[i]!} label="View document" />}
                 </li>
               ))}
             </ul>
@@ -186,6 +215,7 @@ export default async function ProductDetailPage({
                     : "—"}
                 </dd>
               </dl>
+              {amcDocUrl && <DocumentLink href={amcDocUrl} label="View AMC document" />}
 
               <form action={deleteAmcWithIds} className="mt-4">
                 <button
@@ -200,7 +230,7 @@ export default async function ProductDetailPage({
                 <h3 className="text-sm font-semibold text-foreground">Service history</h3>
                 {serviceRecords && serviceRecords.length > 0 ? (
                   <ul className="mt-3 space-y-2.5">
-                    {serviceRecords.map((s) => (
+                    {serviceRecords.map((s, i) => (
                       <li key={s.id} className="rounded-xl bg-neutral-50 px-4 py-3 text-sm">
                         <div className="flex items-center justify-between">
                           <span className="font-medium text-foreground">{formatDate(s.service_date)}</span>
@@ -220,6 +250,7 @@ export default async function ProductDetailPage({
                             Next due: {formatDate(s.next_due_date)}
                           </p>
                         )}
+                        {serviceDocUrls[i] && <DocumentLink href={serviceDocUrls[i]!} label="View bill" />}
                       </li>
                     ))}
                   </ul>
@@ -278,6 +309,18 @@ export default async function ProductDetailPage({
                       name="notes"
                       rows={2}
                       className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="service_document_file" className="mb-1 block text-xs font-medium text-neutral-500">
+                      Service bill (optional)
+                    </label>
+                    <input
+                      id="service_document_file"
+                      name="document_file"
+                      type="file"
+                      accept="image/*,.pdf"
+                      className={FILE_INPUT_CLASS}
                     />
                   </div>
                   <button
@@ -356,6 +399,18 @@ export default async function ProductDetailPage({
                   min="0"
                   placeholder="e.g. 6"
                   className="w-full rounded-lg border border-neutral-300 px-4 py-2.5 text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+                />
+              </div>
+              <div>
+                <label htmlFor="amc_document_file" className="mb-1.5 block text-sm font-medium text-foreground">
+                  AMC contract document (optional)
+                </label>
+                <input
+                  id="amc_document_file"
+                  name="document_file"
+                  type="file"
+                  accept="image/*,.pdf"
+                  className={FILE_INPUT_CLASS}
                 />
               </div>
               <button

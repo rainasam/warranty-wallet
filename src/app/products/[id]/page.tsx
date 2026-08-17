@@ -48,20 +48,20 @@ export default async function ProductDetailPage({
     <div className="flex flex-1 flex-col bg-neutral-50">
       <AppHeader email={user.email} />
 
-      <div className="mx-auto w-full max-w-2xl px-4 py-8">
+      <div className="mx-auto w-full max-w-2xl px-6 py-10">
         <Link href="/dashboard" className="text-sm text-neutral-500 hover:text-foreground">
           ← Back to dashboard
         </Link>
 
-        <div className="mt-4 flex items-start justify-between rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-3">
+        <div className="mt-4 flex items-start justify-between rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center gap-4">
             <span
-              className={`flex h-14 w-14 items-center justify-center rounded-full text-3xl ${categoryColor(product.category)}`}
+              className={`flex h-16 w-16 items-center justify-center rounded-full text-3xl ${categoryColor(product.category)}`}
             >
               {categoryIcon(product.category)}
             </span>
             <div>
-              <h1 className="text-xl font-semibold text-foreground">{product.name}</h1>
+              <h1 className="text-2xl font-bold text-foreground">{product.name}</h1>
               <p className="text-sm text-neutral-500">
                 {categoryLabel(product.category)}
                 {product.brand ? ` · ${product.brand}` : ""}
@@ -70,16 +70,16 @@ export default async function ProductDetailPage({
             </div>
           </div>
           <span
-            className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium ${STATUS_CLASSES[status]}`}
+            className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold ${STATUS_CLASSES[status]}`}
           >
             <span className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[status]}`} />
             {STATUS_LABEL[status]}
           </span>
         </div>
 
-        <section className="mt-6 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
-          <h2 className="text-sm font-semibold text-foreground">Purchase details</h2>
-          <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+        <section className="mt-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+          <h2 className="text-base font-semibold text-foreground">Purchase details</h2>
+          <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
             <dt className="text-neutral-500">Purchase date</dt>
             <dd className="text-foreground">
               {product.purchase_date ? formatDate(product.purchase_date) : "—"}
@@ -91,14 +91,14 @@ export default async function ProductDetailPage({
           </dl>
         </section>
 
-        <section className="mt-6 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
-          <h2 className="text-sm font-semibold text-foreground">Warranty</h2>
+        <section className="mt-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+          <h2 className="text-base font-semibold text-foreground">Warranty</h2>
           {warrantyPeriods && warrantyPeriods.length > 0 ? (
-            <ul className="mt-3 space-y-2">
+            <ul className="mt-4 space-y-2.5">
               {warrantyPeriods.map((w) => (
                 <li
                   key={w.id}
-                  className="flex items-center justify-between rounded-lg bg-neutral-50 px-3 py-2 text-sm"
+                  className="flex items-center justify-between rounded-xl bg-neutral-50 px-4 py-3 text-sm"
                 >
                   <span className="font-medium text-foreground capitalize">{w.type} warranty</span>
                   <span className="text-neutral-500">
@@ -108,18 +108,18 @@ export default async function ProductDetailPage({
               ))}
             </ul>
           ) : (
-            <p className="mt-3 text-sm text-neutral-500">No warranty periods added.</p>
+            <p className="mt-4 text-sm text-neutral-500">No warranty periods added.</p>
           )}
         </section>
 
-        <section className="mt-6 rounded-xl border border-dashed border-neutral-300 bg-white p-5 text-center text-sm text-neutral-500">
+        <section className="mt-6 rounded-2xl border border-dashed border-neutral-300 bg-white p-6 text-center text-sm text-neutral-500">
           AMC contracts and service records are coming in Phase 2.
         </section>
 
         <form action={deleteWithId} className="mt-6">
           <button
             type="submit"
-            className="rounded-md border border-red-200 px-3 py-2 text-sm font-medium text-red-700 transition hover:bg-red-50"
+            className="rounded-lg border border-red-200 px-4 py-2.5 text-sm font-medium text-red-700 transition hover:bg-red-50"
           >
             Delete product
           </button>

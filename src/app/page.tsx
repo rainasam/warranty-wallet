@@ -43,6 +43,18 @@ export default function Home() {
           <FeaturePill icon="🧾" text="Store every invoice" />
           <FeaturePill icon="🔧" text="Track AMC & service" />
         </div>
+
+        <div className="mt-16 flex justify-center gap-6 text-sm text-neutral-400">
+          <Link href="/faq" className="hover:text-neutral-600">
+            FAQ
+          </Link>
+          <Link href="/privacy" className="hover:text-neutral-600">
+            Privacy Policy
+          </Link>
+          <Link href="/terms" className="hover:text-neutral-600">
+            Terms &amp; Conditions
+          </Link>
+        </div>
       </div>
     </div>
   );

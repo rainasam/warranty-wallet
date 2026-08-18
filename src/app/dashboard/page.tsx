@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppHeader } from "@/components/AppHeader";
+import { AppFooter } from "@/components/AppFooter";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { categoryLabel, categoryColor } from "@/lib/categories";
 import {
@@ -97,6 +98,7 @@ export default async function DashboardPage() {
           </div>
         )}
       </div>
+      <AppFooter />
     </div>
   );
 }

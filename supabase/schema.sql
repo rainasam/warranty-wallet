@@ -175,7 +175,25 @@ create policy "reminder_log: user views own" on public.reminder_log
 
 create index if not exists reminder_log_user_id_idx on public.reminder_log (user_id);
 
--- 7. Storage: run this AFTER creating a private "documents" bucket in
+-- 7. feedback
+create table if not exists public.feedback (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users (id) on delete set null,
+  message text not null,
+  rating smallint check (rating between 1 and 5),
+  created_at timestamptz not null default now()
+);
+
+alter table public.feedback enable row level security;
+
+create policy "feedback: user can submit" on public.feedback
+  for insert to authenticated
+  with check (auth.uid() = user_id);
+
+create policy "feedback: user can view own" on public.feedback
+  for select using (auth.uid() = user_id);
+
+-- 8. Storage: run this AFTER creating a private "documents" bucket in
 -- Supabase Dashboard > Storage > New bucket (name: documents, Public: off).
 -- Files are stored under `${user_id}/...`, so these policies scope access
 -- to the folder matching the requesting user's id.

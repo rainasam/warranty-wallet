@@ -45,6 +45,9 @@ export default function Home() {
         </div>
 
         <div className="mt-16 flex justify-center gap-6 text-sm text-neutral-400">
+          <Link href="/pricing" className="hover:text-neutral-600">
+            Pricing
+          </Link>
           <Link href="/faq" className="hover:text-neutral-600">
             FAQ
           </Link>

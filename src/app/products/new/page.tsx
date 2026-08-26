@@ -4,6 +4,7 @@ import { createProduct } from "@/app/products/actions";
 import { createClient } from "@/lib/supabase/server";
 import { AppHeader } from "@/components/AppHeader";
 import { CATEGORIES } from "@/lib/categories";
+import { getPlanUsage } from "@/lib/plan";
 
 const FILE_INPUT_CLASS =
   "w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-600 file:mr-3 file:rounded-md file:border-0 file:bg-teal-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-accent hover:file:bg-teal-100";
@@ -21,6 +22,34 @@ export default async function NewProductPage({
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  const usage = await getPlanUsage(supabase, user.id);
+
+  if (usage.atLimit) {
+    return (
+      <div className="flex flex-1 flex-col bg-neutral-50">
+        <AppHeader email={user.email} />
+        <div className="mx-auto w-full max-w-xl px-6 py-10">
+          <Link href="/dashboard" className="text-sm text-neutral-500 hover:text-foreground">
+            ← Back to dashboard
+          </Link>
+          <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-8 text-center">
+            <p className="text-2xl">🔒</p>
+            <h1 className="mt-3 text-xl font-bold text-foreground">You&apos;ve hit the free plan limit</h1>
+            <p className="mt-2 text-sm text-neutral-600">
+              The free plan tracks up to {usage.limit} products. Upgrade to add unlimited products.
+            </p>
+            <Link
+              href="/pricing"
+              className="mt-5 inline-block rounded-lg bg-gradient-to-r from-accent to-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-teal-100 transition hover:shadow-lg"
+            >
+              View plans
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-1 flex-col bg-neutral-50">

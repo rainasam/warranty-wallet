@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { addMonths } from "@/lib/dates";
 import { uploadDocumentIfPresent } from "@/lib/supabase/storage";
+import { getPlanUsage } from "@/lib/plan";
 
 function parseProductFields(formData: FormData) {
   return {
@@ -25,6 +26,11 @@ export async function createProduct(formData: FormData) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  const usage = await getPlanUsage(supabase, user.id);
+  if (usage.atLimit) {
+    redirect("/products/new");
+  }
 
   const fields = parseProductFields(formData);
 

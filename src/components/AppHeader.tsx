@@ -6,6 +6,7 @@ const NAV_LINKS = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/amc-schedule", label: "AMC Schedule" },
   { href: "/notifications", label: "Notifications" },
+  { href: "/profile", label: "Profile" },
 ];
 
 export function AppHeader({ email }: { email?: string }) {

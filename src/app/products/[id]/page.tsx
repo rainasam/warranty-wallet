@@ -141,6 +141,9 @@ export default async function ProductDetailPage({
                 {product.brand ? ` · ${product.brand}` : ""}
                 {product.model ? ` ${product.model}` : ""}
               </p>
+              {product.serial_number && (
+                <p className="mt-0.5 font-mono text-xs text-neutral-400">S/N: {product.serial_number}</p>
+              )}
             </div>
           </div>
           <span

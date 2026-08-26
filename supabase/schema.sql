@@ -44,6 +44,7 @@ create table if not exists public.products (
   name text not null,
   brand text,
   model text,
+  serial_number text,
   purchase_date date,
   retailer text,
   price numeric,
@@ -201,6 +202,10 @@ create policy "feedback: user can view own" on public.feedback
 create policy "documents: users can upload to own folder" on storage.objects
   for insert to authenticated
   with check (bucket_id = 'documents' and (storage.foldername(name))[1] = auth.uid()::text);
+
+-- 9. Migration: add serial_number to an already-existing products table
+-- (safe to run even on a fresh install — IF NOT EXISTS makes it a no-op).
+alter table public.products add column if not exists serial_number text;
 
 create policy "documents: users can view own files" on storage.objects
   for select to authenticated

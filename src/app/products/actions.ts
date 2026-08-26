@@ -12,6 +12,7 @@ function parseProductFields(formData: FormData) {
     name: String(formData.get("name")),
     brand: String(formData.get("brand") || "") || null,
     model: String(formData.get("model") || "") || null,
+    serial_number: String(formData.get("serial_number") || "").trim(),
     purchase_date: String(formData.get("purchase_date")),
     retailer: String(formData.get("retailer") || "") || null,
     price: formData.get("price") ? Number(formData.get("price")) : null,
@@ -26,6 +27,10 @@ export async function createProduct(formData: FormData) {
   if (!user) redirect("/login");
 
   const fields = parseProductFields(formData);
+
+  if (!fields.serial_number) {
+    redirect("/products/new?error=Serial number / IMEI is required.");
+  }
   const warrantyMonths = Number(formData.get("warranty_months") || 0);
   const hasExtended = formData.get("has_extended") === "on";
   const extendedMonths = Number(formData.get("extended_months") || 0);

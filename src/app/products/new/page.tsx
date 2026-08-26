@@ -106,6 +106,23 @@ export default async function NewProductPage({
                 />
               </div>
             </div>
+
+            <div>
+              <label htmlFor="serial_number" className="mb-1.5 block text-sm font-medium text-foreground">
+                Serial number / IMEI
+              </label>
+              <input
+                id="serial_number"
+                name="serial_number"
+                type="text"
+                required
+                placeholder="e.g. IMEI, serial number on the box/device"
+                className="w-full rounded-lg border border-neutral-300 px-4 py-3 text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+              />
+              <p className="mt-1 text-xs text-neutral-500">
+                Needed for warranty claims and service bookings with the manufacturer.
+              </p>
+            </div>
           </section>
 
           <section className="space-y-5 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">

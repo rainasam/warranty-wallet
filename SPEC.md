@@ -237,3 +237,17 @@ I'll walk you through each of these steps live when we get to that part of the b
 - App logo / brand accent color
 - Exact free-tier storage limit for documents
 - Custom domain name (once you're ready to move off the default Vercel URL)
+
+## 16. Known Limitation: Email Confirmation Currently Disabled
+
+Supabase's "Confirm email" setting is turned **off** in production (Authentication → Sign In / Providers), so new signups activate immediately without clicking a confirmation link. This is a deliberate, temporary workaround — not an oversight.
+
+**Why:** Supabase's free-tier default email sender doesn't allow customizing the confirmation email template (gated behind "Set up custom SMTP to edit templates"). The default template's link doesn't hand off `token_hash`/`type` the way the app's `/auth/confirm` route (`src/app/auth/confirm/route.ts`) expects, so every real confirmation click — tested with both a corporate Workspace email and a plain Gmail address — landed on a "Could not verify email" error, permanently blocking signup completion.
+
+**Real fix requires:**
+1. Purchasing and verifying a real custom domain (deferred per §14 Deployment Plan — currently launching on the free `*.vercel.app` URL)
+2. Verifying that domain in Resend (currently sandbox mode — can only email the account owner)
+3. Configuring Supabase custom SMTP with Resend, using a template link of `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`
+4. Re-enabling "Confirm email"
+
+Until all four are done, do not re-enable "Confirm email" — it will block all signups again.

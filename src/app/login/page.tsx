@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { login } from "@/app/auth/actions";
 import { Logo } from "@/components/Logo";
+import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 
 export default async function LoginPage({
   searchParams,
@@ -29,6 +30,14 @@ export default async function LoginPage({
             {error}
           </div>
         )}
+
+        <GoogleSignInButton />
+
+        <div className="my-5 flex items-center gap-3">
+          <div className="h-px flex-1 bg-neutral-200" />
+          <span className="text-xs font-medium text-neutral-400">OR</span>
+          <div className="h-px flex-1 bg-neutral-200" />
+        </div>
 
         <form action={login} className="space-y-5">
           <div>
